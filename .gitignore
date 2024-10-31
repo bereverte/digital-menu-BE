@@ -1,0 +1,13 @@
+# Ignora la carpeta d'entorn virtual
+env/
+
+# Ignora fitxers Python compilats
+__pycache__/
+*.py[cod]
+
+# Fitxers de base de dades de desenvolupament
+*.sqlite3
+
+# Altres fitxers comuns a ignorar
+*.log
+*.env
