@@ -15,22 +15,28 @@ This is the backend for the Digital Menu project, developed with Django.
    cd digital_menu_backend
 
 2. **Create a virtual environment**:
+   ```bash
    python -m venv env
 
 3. **Activate the virtual environment**:
+   ```bash
    On Windows: .\env\Scripts\activate
    On macOS/Linux: source env/bin/activate
 
 5. **Install dependencies**:
+   ```bash
    pip install -r requirements.txt
    
 6. **Apply database migrations**:
+   ```bash
    python manage.py migrate
 
 7. **Create a superuser** (optional, for accessing the Django admin panel):
+   ```bash
    python manage.py createsuperuser
 
 8. **Run the development server**:
+   ```bash
    python manage.py runserver
 
 The server will be available at http://127.0.0.1:8000
