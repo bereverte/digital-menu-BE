@@ -29,24 +29,39 @@ class CustomAuthToken(ObtainAuthToken):
 class RestaurantViewSet(viewsets.ModelViewSet):
     queryset = Restaurant.objects.all()
     serializer_class = RestaurantSerializer
+    """ authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated] """
 
     def update(self, request, *args, **kwargs):
         restaurant = self.get_object()
         data = request.data
 
+        # Actualitza els camps que es permet modificar
         if 'name' in data:
             restaurant.name = data['name']
 
         if 'logo' in data:
             restaurant.logo = data['logo']
 
+        if 'address' in data:
+            restaurant.address = data['address']
+
+        if 'phone' in data:
+            restaurant.phone = data['phone']
+
+        if 'hours' in data:
+            restaurant.hours = data['hours']
+
         restaurant.save()
 
+        # Serialitza i retorna la resposta
         serializer = self.get_serializer(restaurant)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 class CategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         restaurant_id = self.kwargs['restaurant_id']
@@ -76,12 +91,27 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
 class MenuItemViewSet(viewsets.ModelViewSet):
     serializer_class = MenuItemSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         restaurant_id = self.kwargs['restaurant_id']
         return MenuItem.objects.filter(categories__restaurant_id=restaurant_id).distinct()
 
-    
+    @action(detail=True, methods=['patch'], url_path='toggle-availability')
+    def toggle_availability(self, request, pk=None, restaurant_id=None):
+        """
+        Acción personalizada para alternar el estado de `is_available`.
+        """
+        try:
+            menu_item = self.get_object()  # Obtiene el menú item por su ID
+            menu_item.is_available = not menu_item.is_available  # Alterna el valor de is_available
+            menu_item.save()
+            # Devuelve la respuesta con el estado actualizado
+            return Response({"id": menu_item.id, "is_available": menu_item.is_available}, status=status.HTTP_200_OK)
+        except MenuItem.DoesNotExist:
+            return Response({"error": "Menu item not found"}, status=status.HTTP_404_NOT_FOUND)
+        
     @action(detail=False, methods=['get'], url_path='check')
     def check_menu_item_exists(self, request, restaurant_id=None):
         """
@@ -113,11 +143,27 @@ class MenuItemViewSet(viewsets.ModelViewSet):
 
 class RestaurantUserViewSet(viewsets.ModelViewSet):
     serializer_class = RestaurantUserSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         restaurant_id = self.kwargs['restaurant_id']
         return RestaurantUser.objects.filter(restaurant_id=restaurant_id)
-    
+
+    @action(detail=False, methods=['get'], url_path='me')
+    def get_authenticated_user(self, request, restaurant_id=None):
+        """
+        Este endpoint devuelve el usuario actualmente autenticado.
+        """
+        try:
+            user = request.user  # Obtener el usuario autenticado desde el token
+            """ restaurant_id = self.kwargs['restaurant_id'] """
+            restaurant_user = RestaurantUser.objects.get(user=user, restaurant__id=restaurant_id)
+            serializer = self.get_serializer(restaurant_user)
+            return Response(serializer.data)
+        except RestaurantUser.DoesNotExist:
+            return Response({"error": "Restaurant user not found"}, status=404)
+
 
 class RegisterView(APIView):
     """

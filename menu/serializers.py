@@ -9,7 +9,7 @@ class MenuItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MenuItem
-        fields = ['id', 'name', 'description', 'price', 'categories', 'category_names']
+        fields = ['id', 'name', 'description', 'price', 'is_available', 'categories', 'category_names']
 
     def get_category_names(self, obj):
         return [category.name for category in obj.categories.all()]
@@ -32,8 +32,16 @@ class RestaurantSerializer(serializers.ModelSerializer):
     def get_menuItems(self, obj):
         menu_items = MenuItem.objects.filter(categories__restaurant=obj).distinct()
         return MenuItemSerializer(menu_items, many=True).data
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        print("Generated logo URL:", representation.get("logo"))  # Afegeix aquest print per veure la URL
+        return representation
 
 class RestaurantUserSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(source='user.email', read_only=True)
+    restaurant_name = serializers.CharField(source='restaurant.name', read_only=True)
+
     class Meta:
         model = RestaurantUser
-        fields = ['id', 'username', 'restaurant']
+        fields = ['id', 'email', 'restaurant_name']

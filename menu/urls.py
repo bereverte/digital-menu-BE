@@ -10,5 +10,5 @@ router.register(r'restaurants/(?P<restaurant_id>\d+)/users', RestaurantUserViewS
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('register/', RegisterView.as_view(), name='register_user'),  # Ruta para registro
+    path('register/', RegisterView.as_view(), name='register_user'),
 ]
