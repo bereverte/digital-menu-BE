@@ -11,6 +11,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import AllowAny
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
+from django.core.exceptions import ValidationError
 
 class CustomAuthToken(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
@@ -21,7 +22,7 @@ class CustomAuthToken(ObtainAuthToken):
         return Response({
             'token': token.key,
             'user_id': token.user.pk,
-            'restaurant_id': restaurant_user.restaurant.id,  # Devolvemos el restaurant_id
+            'restaurant_id': restaurant_user.restaurant.id,
             'restaurant_name': restaurant.name,
             'email': token.user.email
         })
@@ -29,8 +30,8 @@ class CustomAuthToken(ObtainAuthToken):
 class RestaurantViewSet(viewsets.ModelViewSet):
     queryset = Restaurant.objects.all()
     serializer_class = RestaurantSerializer
-    """ authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated] """
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def update(self, request, *args, **kwargs):
         restaurant = self.get_object()
@@ -54,7 +55,6 @@ class RestaurantViewSet(viewsets.ModelViewSet):
 
         restaurant.save()
 
-        # Serialitza i retorna la resposta
         serializer = self.get_serializer(restaurant)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -69,7 +69,12 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         restaurant_id = self.kwargs['restaurant_id']
-        restaurant = Restaurant.objects.get(id=restaurant_id)
+        category_name = serializer.validated_data.get('name')
+        
+        if Category.objects.filter(restaurant_id=restaurant_id, name__iexact=category_name).exists():
+            raise ValidationError({"error": "Category with this name already exists."})
+
+        restaurant = Restaurant.objects.get(id=restaurant_id)       
         serializer.save(restaurant=restaurant)
     
     @action(detail=False, methods=['get'], url_path='check')
@@ -87,7 +92,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
             
             return Response({"exists": exists})
         
-        return Response({"exists": False}, status=400)
+        return Response({"exists": False}, status=status.HTTP_400_BAD_REQUEST)
 
 class MenuItemViewSet(viewsets.ModelViewSet):
     serializer_class = MenuItemSerializer
@@ -114,32 +119,27 @@ class MenuItemViewSet(viewsets.ModelViewSet):
         
     @action(detail=False, methods=['get'], url_path='check')
     def check_menu_item_exists(self, request, restaurant_id=None):
-        """
-        Verifica si un ítem de menú con el mismo nombre y al menos una de las categorías ya existe.
-        """
         item_name = request.query_params.get('name')
         category_ids = request.query_params.get('categories', "").split(",")  # Lista de IDs de categorías
 
         if item_name and category_ids:
-            # Convertir las categorías a una lista de enteros
-            category_ids = list(map(int, category_ids))
+            category_ids = list(map(int, category_ids))  # Convertir les categories a una llista d'enters
 
-            # Buscar ítems de menú con el mismo nombre (insensible a mayúsculas)
+            # Busquem ítems de menú amb el mateix nom (insensible a majúscules)
             menu_items = MenuItem.objects.filter(
                 categories__restaurant_id=restaurant_id,
-                name__iexact=item_name  # Insensible a mayúsculas
+                name__iexact=item_name
             ).distinct()
 
-            # Comprobar si alguna de las categorías seleccionadas coincide con las categorías del ítem existente
+            # Comprovar si alguna de les categories seleccionades coincideix amb les categories de l'ítem existent
             for item in menu_items:
-                item_categories = list(item.categories.values_list('id', flat=True))  # IDs de las categorías del ítem
+                item_categories = list(item.categories.values_list('id', flat=True))
                 if any(cat_id in item_categories for cat_id in category_ids):
-                    return Response({"exists": True})
+                    return Response({"exists": True}, status=status.HTTP_200_OK)
 
-            return Response({"exists": False})
+            return Response({"exists": False}, status=status.HTTP_200_OK)
     
-        return Response({"exists": False}, status=400)  # 400 si faltan parámetros o son incorrectos
-
+        return Response({"error": "Missing parameters or invalid values"}, status=status.HTTP_400_BAD_REQUEST)
 
 class RestaurantUserViewSet(viewsets.ModelViewSet):
     serializer_class = RestaurantUserSerializer

@@ -57,3 +57,7 @@ class MenuItem(models.Model):
     def __str__(self):
         category_names = ", ".join([category.name for category in self.categories.all()])
         return f'{self.name} - Categories: {category_names}'
+    
+    def clean(self):
+        if self.price <= 0:
+            raise ValidationError("Price must be greater than zero.")

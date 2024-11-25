@@ -13,21 +13,33 @@ class MenuItemSerializer(serializers.ModelSerializer):
 
     def get_category_names(self, obj):
         return [category.name for category in obj.categories.all()]
+    
+    def validate_price(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Price must be greater than zero.")
+        return value
+
 
 class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
         fields = ['id', 'name']
+    
 
 class RestaurantSerializer(serializers.ModelSerializer):
     categories = CategorySerializer(many=True, read_only=True)
-    menuItems = serializers.SerializerMethodField()
-    logo = serializers.ImageField(max_length=None, use_url=True)
+    menuItems = MenuItemSerializer(many=True, read_only=True)
+    logo = serializers.ImageField(max_length=None, use_url=True, required=False)
 
     class Meta:
         model = Restaurant
         fields = ['id', 'name', 'address', 'hours', 'phone', 'logo', 'categories', 'menuItems']
+
+    def validate_name(self, value):
+        if not value:
+            raise serializers.ValidationError("Restaurant name is required.")
+        return value
 
     def get_menuItems(self, obj):
         menu_items = MenuItem.objects.filter(categories__restaurant=obj).distinct()
@@ -37,6 +49,7 @@ class RestaurantSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         print("Generated logo URL:", representation.get("logo"))  # Afegeix aquest print per veure la URL
         return representation
+
 
 class RestaurantUserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(source='user.email', read_only=True)
