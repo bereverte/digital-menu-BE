@@ -47,7 +47,6 @@ class RestaurantSerializer(serializers.ModelSerializer):
     
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        print("Generated logo URL:", representation.get("logo"))  # Afegeix aquest print per veure la URL
         return representation
 
 

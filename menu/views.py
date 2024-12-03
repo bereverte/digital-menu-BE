@@ -65,7 +65,8 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         restaurant_id = self.kwargs['restaurant_id']
-        return Category.objects.filter(restaurant_id=restaurant_id)
+        categories = Category.objects.filter(restaurant_id=restaurant_id)
+        return categories
 
     def perform_create(self, serializer):
         restaurant_id = self.kwargs['restaurant_id']
