@@ -20,11 +20,16 @@ from django.urls import path, include
 from menu.views import CustomAuthToken
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import HttpResponse
+
+def home(request):
+    return HttpResponse("Welcome to the Digital Menu API!")
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('menu.urls')),
     path('token-auth/', CustomAuthToken.as_view(), name='token_auth'), # Endpoint para obtener el token
+    path('', home),
 ]
 
 if settings.DEBUG:
