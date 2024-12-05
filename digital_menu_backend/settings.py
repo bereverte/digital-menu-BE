@@ -67,6 +67,8 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "https://digitalmenu-khaki.vercel.app",
+    "https://digitalmenu-k4vd6ka5q-bertas-projects-4755d872.vercel.app"
 ]
 
 ROOT_URLCONF = 'digital_menu_backend.urls'
