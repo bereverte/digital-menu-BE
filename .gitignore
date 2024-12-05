@@ -14,3 +14,4 @@ media/restaurant_photos/
 # Altres fitxers comuns a ignorar
 *.log
 *.env
+staticfiles/
