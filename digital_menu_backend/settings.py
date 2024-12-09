@@ -65,12 +65,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^https://digitalmenu-.*\.vercel\.app$",  # Subdominis de Vercel
-    r"^http://localhost:\d+$",  # Desenvolupament local
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # Desenvolupament local
+    "https://digitalmenu-khaki.vercel.app",  # Producció
 ]
-
-CORS_ALLOW_HEADERS = ["content-type", "authorization"]
 
 ROOT_URLCONF = 'digital_menu_backend.urls'
 
