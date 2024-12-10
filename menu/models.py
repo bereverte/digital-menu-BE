@@ -34,7 +34,6 @@ class RestaurantUser(models.Model):
 class Category(models.Model):
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='categories')
     name = models.CharField(max_length=100)
-    order = models.PositiveIntegerField(default=0)
 
     class Meta:
         verbose_name_plural = "Categories"
@@ -47,7 +46,6 @@ class MenuItem(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=5, decimal_places=2)
-    order = models.PositiveIntegerField(default=0)
     is_available = models.BooleanField(default=True)
 
     class Meta:

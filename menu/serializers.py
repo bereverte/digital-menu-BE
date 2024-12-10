@@ -29,7 +29,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class RestaurantSerializer(serializers.ModelSerializer):
     categories = CategorySerializer(many=True, read_only=True)
-    menuItems = MenuItemSerializer(many=True, read_only=True)
+    menuItems = serializers.SerializerMethodField()
     logo = serializers.ImageField(max_length=None, use_url=True, required=False)
 
     class Meta:
@@ -44,10 +44,6 @@ class RestaurantSerializer(serializers.ModelSerializer):
     def get_menuItems(self, obj):
         menu_items = MenuItem.objects.filter(categories__restaurant=obj).distinct()
         return MenuItemSerializer(menu_items, many=True).data
-    
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        return representation
 
 
 class RestaurantUserSerializer(serializers.ModelSerializer):
