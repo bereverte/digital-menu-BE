@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from django.contrib.auth.models import User
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import AllowAny
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -31,7 +31,7 @@ class RestaurantViewSet(viewsets.ModelViewSet):
     queryset = Restaurant.objects.all()
     serializer_class = RestaurantSerializer
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def update(self, request, *args, **kwargs):
         restaurant = self.get_object()
@@ -58,10 +58,16 @@ class RestaurantViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(restaurant)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
+    @action(detail=True, methods=['get'], permission_classes=[AllowAny], url_path='public')
+    def get_public_restaurant(self, request, pk=None):
+        restaurant = self.get_object()
+        serializer = self.get_serializer(restaurant)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
 class CategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
         restaurant_id = self.kwargs['restaurant_id']
@@ -94,11 +100,20 @@ class CategoryViewSet(viewsets.ModelViewSet):
             return Response({"exists": exists})
         
         return Response({"exists": False}, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=False, methods=['get'], url_path='public', permission_classes=[AllowAny])
+    def get_public_categories(self, request, restaurant_id=None):
+        """
+        Endpoint públic per obtenir categories d'un restaurant.
+        """
+        categories = Category.objects.filter(restaurant_id=restaurant_id)
+        serializer = self.get_serializer(categories, many=True)
+        return Response(serializer.data)
 
 class MenuItemViewSet(viewsets.ModelViewSet):
     serializer_class = MenuItemSerializer
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
         restaurant_id = self.kwargs['restaurant_id']
@@ -141,6 +156,15 @@ class MenuItemViewSet(viewsets.ModelViewSet):
             return Response({"exists": False}, status=status.HTTP_200_OK)
     
         return Response({"error": "Missing parameters or invalid values"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=False, methods=['get'], url_path='public', permission_classes=[AllowAny])
+    def get_public_menu_items(self, request, restaurant_id=None):
+        """
+        Endpoint públic per obtenir ítems del menú d'un restaurant.
+        """
+        menu_items = MenuItem.objects.filter(categories__restaurant_id=restaurant_id, is_available=True).distinct()
+        serializer = self.get_serializer(menu_items, many=True)
+        return Response(serializer.data)
 
 class RestaurantUserViewSet(viewsets.ModelViewSet):
     serializer_class = RestaurantUserSerializer
