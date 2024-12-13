@@ -1,56 +1,92 @@
 # Digital Menu - Backend
 
-This is the backend for the Digital Menu project, developed with Django.
+### Description
+**Digital Menu Backend** is a Django-based REST API that powers the **Digital Menu** web application. It provides endpoints for user authentication, restaurant management, menu and category management, and public access to restaurant menus.
 
-## Requirements
+### Features:
+- **User Authentication**:
+  - Token-based authentication.
+  - Custom registration endpoint to create restaurant-associated accounts.
+- **Restaurant Management**:
+  - Manage restaurant details (name, logo, address, contact information).
+  - Public endpoint to fetch restaurant details without authentication.
+- **Menu Management**:
+  - CRUD operations for categories and menu items.
+  - Validate menu items to avoid duplicates by name and category.
+  - Toggle item availability.
+  - Public endpoints to fetch available categories and menu items.
+- **Permissions**:
+  - Authenticated endpoints for managing restaurant data.
+  - Public endpoints for displaying menu information.
 
-- Python 3.x
-- Git
+### Deployed URL
 
-## Backend Installation (Django)
+The backend is deployed at: [Digital Menu Frontend](https://digital-menu-backend-hfa5.onrender.com)
 
-1. **Clone the repository**:
+
+## Project Setup
+
+### Prerequisites
+
+Ensure you have the following installed:
+
+- **Python** (3.8 or later)
+- **pip** (Python package manager)
+- **PostgreSQL** (optional but recommended for production)
+
+### Installation
+
+1. Clone this repository:
    ```bash
-   git clone <repository-url>
-   cd digital_menu_backend
+   git clone https://github.com/bereverte/digital-menu-BE.git
+   cd digital-menu-BE
 
-2. **Create a virtual environment**:
+2. Create a virtual environment:
    ```bash
    python -m venv env
+   source env/bin/activate  # On Windows: env\Scripts\activate
 
-3. **Activate the virtual environment**:
-   ```bash
-   On Windows: .\env\Scripts\activate
-   On macOS/Linux: source env/bin/activate
-
-5. **Install dependencies**:
+3. Install dependencies:
    ```bash
    pip install -r requirements.txt
-   
-6. **Apply database migrations**:
+
+4. Create a .env file in the root directory and set the following environment variables:
+   ```bash
+   SECRET_KEY=your_secret_key
+   DEBUG=True   # For production, configure the database (e.g., PostgreSQL) and set DEBUG=False.
+   DATABASE_URL=sqlite:///db.sqlite3   # Update this for PostgreSQL in production
+
+5. Apply migrations:
    ```bash
    python manage.py migrate
 
-7. **Create a superuser** (optional, for accessing the Django admin panel):
+6. Create a superuser:
    ```bash
    python manage.py createsuperuser
 
-8. **Run the development server**:
+7. Start the development server:
    ```bash
    python manage.py runserver
 
-The server will be available at http://127.0.0.1:8000
+The backend will be accessible at `http://127.0.0.1:8000`.
 
+## API Documentation
 
-## Important Files
+API documentation is available through the following paths:
 
-- **manage.py**: Main script to run Django commands.
-- **requirements.txt**: List of backend dependencies.
-- **digital_menu_backend/**: Folder with Django project settings.
-- **menu/**: Folder containing the main application for the digital menu.
+### Authenticated Endpoints:
+- **`/api/restaurants/`**: Manage restaurant details.
+- **`/api/categories/`**: Manage categories for menu items.
+- **`/api/menuItems/`**: Manage menu items.
+- **`/token-auth/`**: Obtain an authentication token.
 
+### Public Endpoints:
+- **`/api/restaurants/<id>/public/`**: Fetch restaurant details.
+- **`/api/restaurants/<id>/categories/public/`**: Fetch public categories.
+- **`/api/restaurants/<id>/menuItems/public/`**: Fetch public menu items.
 
-## Additional Notes
+## Technologies Used:
 
-- **Database Configuration**: Currently, the project uses an SQLite database for ease of development. If you need a production database, consider using PostgreSQL or another database system.
-- **Environment Variables**: If the project requires environment variables, make sure to add them to a `.env` file (which should be included in `.gitignore`).
+- **Django**: Python web framework.
+- **Django REST Framework (DRF)** for building REST APIs.
+- **PostgreSQL**: Recommended for production databases.  
